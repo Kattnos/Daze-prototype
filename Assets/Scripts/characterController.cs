@@ -6,7 +6,8 @@ public class characterController : MonoBehaviour
 {
 	//Fix toggle crouch bug with timer
     private CharacterController charControl;
-	public int speed;
+	private float speed;
+	public float defaultSpeed;
 	public float gravity;
 	private Vector3 velocity;
 	private GameObject Camera;
@@ -15,11 +16,14 @@ public class characterController : MonoBehaviour
 	public bool isCrouching = false;
 	private float timer;
 	private bool firstCrouch = true;
-	public float t;
+	private float t;
+	private float t2;
 	public float crouchLength;
 	public float crouchSpeed;
 	private float currentPosZ;
+	private float currentPosZ2;
 	private bool crouchDone;
+	public float crouchingMovementSpeed;
 	private bool stopCrouching;
 	private float temp;
 	private float standardPosZ = 0.0066f;
@@ -31,8 +35,7 @@ public class characterController : MonoBehaviour
 	private void Update () {
 	//	Debug.Log(Mathf.SmoothStep(0.0066f, 0.0066f -= cr, Time.deltaTime));
 	 //   Debug.Log(Mathf.SmoothStep(standardPosZ, (standardPosZ -= crouchLength), Time.deltaTime));
-	 	
-		currentPosZ = Camera.transform.localPosition.z;
+	 	speed = defaultSpeed;
 		if (holdCrouch == true)
 		{
 			if (Input.GetAxis("Crouch") == 1) {
@@ -55,18 +58,32 @@ public class characterController : MonoBehaviour
 				isCrouching = false;
 			}
 		}
-		if (isCrouching == false && Camera.transform.localPosition.z == 0.0066f) {
-			t = 0f;
+		if (isCrouching == false && Camera.transform.localPosition.z >= 0.0066f) {
 		}
 		if (isCrouching == true)
 		{ 
+			speed = crouchingMovementSpeed;
+			t2 = 0f;
+			Debug.Log("crouching");
 			t += Time.deltaTime;
-			Camera.transform.localPosition = new Vector3(Camera.transform.localPosition.x, Camera.transform.localPosition.y, Mathf.SmoothStep(standardPosZ, 0.0016f, t / crouchSpeed));	
-		} else if (isCrouching == false && Camera.transform.localPosition.z != 0.0066f)
+			currentPosZ = Camera.transform.localPosition.z;
+			Camera.transform.localPosition = new Vector3(Camera.transform.localPosition.x, Camera.transform.localPosition.y, Mathf.SmoothStep(currentPosZ, (standardPosZ - crouchLength), t / crouchSpeed));	
+		} else if (isCrouching == false && Camera.transform.localPosition.z < 0.0066f)
 		{
-			t += Time.deltaTime;
-			Debug.Log(standardPosZ);
-			Camera.transform.localPosition = new Vector3(Camera.transform.localPosition.x, Camera.transform.localPosition.y, Mathf.SmoothStep(0.0016f, standardPosZ, t / crouchSpeed));
+			speed = defaultSpeed;
+			currentPosZ2 = Camera.transform.localPosition.z;
+			t = 0f;
+			Debug.Log("standing up");
+			Debug.Log(Mathf.SmoothStep(currentPosZ, standardPosZ, t2 / crouchSpeed));
+			t2 += Time.deltaTime;
+			Camera.transform.localPosition = new Vector3(Camera.transform.localPosition.x, Camera.transform.localPosition.y, Mathf.SmoothStep(currentPosZ, standardPosZ, t2 / crouchSpeed));
+		} else {
+			speed = defaultSpeed;
+			currentPosZ = Camera.transform.localPosition.z;
+			currentPosZ2 = Camera.transform.localPosition.z;
+			t = 0f;
+			t2 = 0f;
+			Debug.Log("Is not crouching");
 		}
 	}
 	private void FixedUpdate()
