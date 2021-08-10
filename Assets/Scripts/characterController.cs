@@ -6,7 +6,7 @@ public class characterController : MonoBehaviour
 {
 	//Fix toggle crouch bug with timer
     private CharacterController charControl;
-	private float speed; //Current speed
+	public float speed; //Current speed
 	public float defaultSpeed; //Speed when walking
 	public float gravity;
 	private Vector3 velocity;
@@ -35,13 +35,16 @@ public class characterController : MonoBehaviour
 	public float transitionSpeed;
 	private float currentSpeed1;
 	private float currentSpeed2;
+	public float stamina;
+	public float staminaTimer;
+	private bool staminaBool;
+	private bool staminaReset;
 	private void Start()
 	{
 		charControl = GetComponent<CharacterController>();
 		Camera = GameObject.Find("PlayerCamera"); 
 	}
 	private void Update () {
-			Debug.Log(speed);
 		if (holdCrouch == true)
 		{
 			if (Input.GetAxis("Crouch") == 1) {
@@ -65,7 +68,7 @@ public class characterController : MonoBehaviour
 			}
 		}
 		if (toggleSprint == false) {
-			 if (Input.GetAxis("Sprint") == 1) {
+			 if (Input.GetAxis("Sprint") == 1 && staminaBool == false) {
 				sprinting = true;
 			 } else {
 				 sprinting = false;
@@ -82,6 +85,7 @@ public class characterController : MonoBehaviour
 			Camera.transform.localPosition = new Vector3(Camera.transform.localPosition.x, Camera.transform.localPosition.y, Mathf.SmoothStep(currentPosZ2, 0.0016f, (t / crouchSpeed)));	
 		} else if (isCrouching == false && Camera.transform.localPosition.z < 0.0066f)
 		{
+			Debug.Log("ss");
 			speed = defaultSpeed;
 			currentPosZ2 = Camera.transform.localPosition.z;
 			t = 0f;
@@ -93,21 +97,42 @@ public class characterController : MonoBehaviour
 			t = 0f;
 			t2 = 0f;
 		}
-		if (sprinting == true) { //sprinting
+		if (sprinting == true && staminaBool == false) { //sprinting
 			st += Time.deltaTime;
 			speed = Mathf.SmoothStep(currentSpeed1, sprintingSpeed, st / transitionSpeed);
 			st2 = 0f;
 			currentSpeed2 = speed;
-		} else if(sprinting == false && speed != defaultSpeed && isCrouching == false) { //let go of sprint button but is not at normal speed
+			staminaTimer += Time.deltaTime;
+			if (staminaTimer >= stamina) {
+				staminaBool = true;
+			}
+		} else if(sprinting == false && speed != defaultSpeed && isCrouching == false && staminaReset == false) { //let go of sprint button but is not at normal speed
 			st2 += Time.deltaTime;
 			speed = Mathf.SmoothStep(currentSpeed2, defaultSpeed, st2 / transitionSpeed);
 			st = 0f;
 			currentSpeed1 = speed;
+			if (staminaTimer >= 0f) {
+				staminaTimer -= Time.deltaTime;
+			}
 		} else {
 			st = 0f;
 			st2 = 0f;
 			currentSpeed1 = speed;
 			currentSpeed2 = speed;
+			if (staminaTimer >= 0f) {
+				staminaTimer -= Time.deltaTime;
+			}
+		}
+		    if (staminaTimer <= 0f && isCrouching == false) {
+			staminaBool = false;
+			staminaReset = false;
+			Debug.Log("s2");
+			speed = defaultSpeed;			
+		} else if (staminaTimer >= stamina) {
+			staminaBool = true;
+			staminaReset = true;
+			speed = 3f;
+			Debug.Log("ww");
 		}
 		
 	}
