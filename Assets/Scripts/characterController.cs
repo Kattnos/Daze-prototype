@@ -6,8 +6,8 @@ public class characterController : MonoBehaviour
 {
 	//Fix toggle crouch bug with timer
     private CharacterController charControl;
-	private float speed;
-	public float defaultSpeed;
+	private float speed; //Current speed
+	public float defaultSpeed; //Speed when walking
 	public float gravity;
 	private Vector3 velocity;
 	private GameObject Camera;
@@ -16,10 +16,10 @@ public class characterController : MonoBehaviour
 	public bool isCrouching = false;
 	private float timer;
 	private bool firstCrouch = true;
-	private float t;
-	private float t2;
+	private float t = 0f;
+	private float t2 = 0f;
 	public float crouchLength;
-	public float crouchSpeed;
+	public float crouchSpeed; //Speed when crouching
 	private float currentPosZ;
 	private float currentPosZ2;
 	private bool crouchDone;
@@ -27,15 +27,21 @@ public class characterController : MonoBehaviour
 	private bool stopCrouching;
 	private float temp;
 	private float standardPosZ = 0.0066f;
+	public bool toggleSprint;
+	public bool sprinting;
+	public float sprintingSpeed;
+	private float st = 0f;
+	private float st2 = 0f;
+	public float transitionSpeed;
+	private float currentSpeed1;
+	private float currentSpeed2;
 	private void Start()
 	{
 		charControl = GetComponent<CharacterController>();
 		Camera = GameObject.Find("PlayerCamera"); 
 	}
 	private void Update () {
-	//	Debug.Log(Mathf.SmoothStep(0.0066f, 0.0066f -= cr, Time.deltaTime));
-	 //   Debug.Log(Mathf.SmoothStep(standardPosZ, (standardPosZ -= crouchLength), Time.deltaTime));
-	 	speed = defaultSpeed;
+			Debug.Log(speed);
 		if (holdCrouch == true)
 		{
 			if (Input.GetAxis("Crouch") == 1) {
@@ -58,34 +64,54 @@ public class characterController : MonoBehaviour
 				isCrouching = false;
 			}
 		}
-		if (isCrouching == false && Camera.transform.localPosition.z >= 0.0066f) {
+		if (toggleSprint == false) {
+			 if (Input.GetAxis("Sprint") == 1) {
+				sprinting = true;
+			 } else {
+				 sprinting = false;
+			 }
+		} else if (toggleSprint == true) {
+			//Under development
 		}
 		if (isCrouching == true)
 		{ 
 			speed = crouchingMovementSpeed;
 			t2 = 0f;
-			Debug.Log("crouching");
 			t += Time.deltaTime;
 			currentPosZ = Camera.transform.localPosition.z;
-			Camera.transform.localPosition = new Vector3(Camera.transform.localPosition.x, Camera.transform.localPosition.y, Mathf.SmoothStep(currentPosZ, (standardPosZ - crouchLength), t / crouchSpeed));	
+			Camera.transform.localPosition = new Vector3(Camera.transform.localPosition.x, Camera.transform.localPosition.y, Mathf.SmoothStep(currentPosZ2, 0.0016f, (t / crouchSpeed)));	
 		} else if (isCrouching == false && Camera.transform.localPosition.z < 0.0066f)
 		{
 			speed = defaultSpeed;
 			currentPosZ2 = Camera.transform.localPosition.z;
 			t = 0f;
-			Debug.Log("standing up");
-			Debug.Log(Mathf.SmoothStep(currentPosZ, standardPosZ, t2 / crouchSpeed));
 			t2 += Time.deltaTime;
-			Camera.transform.localPosition = new Vector3(Camera.transform.localPosition.x, Camera.transform.localPosition.y, Mathf.SmoothStep(currentPosZ, standardPosZ, t2 / crouchSpeed));
+			Camera.transform.localPosition = new Vector3(Camera.transform.localPosition.x, Camera.transform.localPosition.y, Mathf.SmoothStep(currentPosZ, 0.0066f, (t2 / crouchSpeed)));
 		} else {
-			speed = defaultSpeed;
 			currentPosZ = Camera.transform.localPosition.z;
 			currentPosZ2 = Camera.transform.localPosition.z;
 			t = 0f;
 			t2 = 0f;
-			Debug.Log("Is not crouching");
 		}
+		if (sprinting == true) { //sprinting
+			st += Time.deltaTime;
+			speed = Mathf.SmoothStep(currentSpeed1, sprintingSpeed, st / transitionSpeed);
+			st2 = 0f;
+			currentSpeed2 = speed;
+		} else if(sprinting == false && speed != defaultSpeed && isCrouching == false) { //let go of sprint button but is not at normal speed
+			st2 += Time.deltaTime;
+			speed = Mathf.SmoothStep(currentSpeed2, defaultSpeed, st2 / transitionSpeed);
+			st = 0f;
+			currentSpeed1 = speed;
+		} else {
+			st = 0f;
+			st2 = 0f;
+			currentSpeed1 = speed;
+			currentSpeed2 = speed;
+		}
+		
 	}
+
 	private void FixedUpdate()
 	{
 		Vector3 move = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
