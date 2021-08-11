@@ -18,3 +18,6 @@ Graphics:
 PS1 style graphics.
 Low poly models.
 Low res textures.
+
+Credit:
+https://elegantcrow.itch.io/psx-retro-style-tree-pack
