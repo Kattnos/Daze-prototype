@@ -8,7 +8,12 @@ public class camera : MonoBehaviour
 	public float vertical;
 	private float yaw = 0f;
 	private float pitch = 0f;
+	public bool fullScreen;
+	public int refreshRate;
 
+	private void Start () {
+		Screen.SetResolution(640, 360, fullScreen, refreshRate);
+	}
 	private void Update()
 	{
 		yaw += horizontal * Input.GetAxis("Mouse X");

@@ -44,7 +44,10 @@ Shader "psx/trasparent/unlit" {
 		o.pos = vertex;
 
 		//Vertex lighting 
-		o.color = v.color*UNITY_LIGHTMODEL_AMBIENT;
+		//o.color = v.color*UNITY_LIGHTMODEL_AMBIENT;
+
+		o.color = float4(ShadeVertexLightsFull(v.vertex, v.normal, 4, true), 1.0);
+		o.color *= v.color;
 
 		float distance = length(mul(UNITY_MATRIX_MV,v.vertex));
 
