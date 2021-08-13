@@ -39,10 +39,13 @@ public class characterController : MonoBehaviour
 	public float staminaTimer;
 	private bool staminaBool;
 	private bool staminaReset;
+	public GameObject light;
+	private float c;
+	private bool active;
 	private void Start()
 	{
 		charControl = GetComponent<CharacterController>();
-		Camera = GameObject.Find("PlayerCamera"); 
+		Camera = GameObject.Find("PlayerCamera");
 	}
 	private void Update () {
 		if (holdCrouch == true)
@@ -133,6 +136,17 @@ public class characterController : MonoBehaviour
 			staminaReset = true;
 			speed = 3f;
 			Debug.Log("ww");
+		}
+		c += Time.deltaTime;
+		if (Input.GetAxis("Light") == 1) {
+			if (light.activeSelf == true && c >= 0.5f) {
+				active = false;
+				c = 0;
+			} else if (c >= 0.5f) {
+				active = true;
+				c = 0;
+			}
+ 			light.SetActive(active);
 		}
 		
 	}
